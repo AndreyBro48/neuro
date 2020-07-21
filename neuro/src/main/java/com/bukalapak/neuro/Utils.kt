@@ -1,13 +1,13 @@
 package com.bukalapak.neuro
 
 import android.net.Uri
-import com.bukalapak.result.Result
+import com.bukalapak.result.Response
 import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.ConcurrentSkipListSet
 
-typealias SignalAction = (Signal) -> Result
-typealias AxonPreprocessor = (AxonProcessor, SignalAction, Signal) -> Result
-typealias AxonProcessor = (SignalAction, Signal) -> Result
+typealias SignalAction<T> = (Signal) -> Response<T>
+typealias AxonPreprocessor<T> = (AxonProcessor<T>, SignalAction<T>, Signal) -> Response<T>
+typealias AxonProcessor<T> = (SignalAction<T>, Signal) -> Response<T>
 typealias RouteDecision = Triple<Nucleus.Chosen, AxonBranch?, Uri>
 typealias AxonTerminal = ConcurrentSkipListMap<Int, ConcurrentSkipListSet<AxonBranch>>
 
