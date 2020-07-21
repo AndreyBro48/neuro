@@ -1,9 +1,9 @@
 package com.bukalapak.neuro
 
-import com.bukalapak.result.Result
+import com.bukalapak.result.Response
 import java.util.Locale
 
-sealed class Nucleus(val id: String) : Comparable<Nucleus> {
+sealed class Nucleus<T>(val id: String) : Comparable<Nucleus<T>> {
 
     // pattern to expression, sort descending from the longest pattern
     private val schemePatterns: List<Pair<Regex, String>> by lazy {
@@ -50,7 +50,7 @@ sealed class Nucleus(val id: String) : Comparable<Nucleus> {
         scheme: String?,
         host: String?,
         port: Int
-    ): Chosen? {
+    ): Chosen<T>? {
 
         val chosenHost = if (hostPatterns.isEmpty()) null
         else hostPatterns.find {
@@ -82,7 +82,7 @@ sealed class Nucleus(val id: String) : Comparable<Nucleus> {
      * #2 highest member count
      * #3 alphabetically by id
      */
-    final override fun compareTo(other: Nucleus): Int {
+    final override fun compareTo(other: Nucleus<T>): Int {
         val priority1 = priority
         val priority2 = other.priority
 
@@ -110,8 +110,8 @@ sealed class Nucleus(val id: String) : Comparable<Nucleus> {
 
     open val priority: Int = 100 // default priority, just random number between 0 and Int.MAX_VALUE
 
-    class Chosen(
-        val nucleus: Nucleus,
+    class Chosen<T>(
+        val nucleus: Nucleus<T>,
         val scheme: String?,
         val host: String?,
         val port: Int?
@@ -121,26 +121,26 @@ sealed class Nucleus(val id: String) : Comparable<Nucleus> {
 
     final override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other == null || other !is Nucleus) return false
+        if (other == null || other !is Nucleus<*>) return false
         return id == other.id
     }
 
     final override fun hashCode(): Int = 31 * id.hashCode()
 }
 
-abstract class Soma(id: String) : Nucleus(id) {
+abstract class Soma<T>(id: String) : Nucleus<T>(id) {
 
-    internal val noBranchAction: AxonBranch by lazy {
+    internal val noBranchAction: AxonBranch<T> by lazy {
         AxonBranch(EXPRESSION_NO_BRANCH) {
             onProcessNoBranch(it)
         }
     }
-    internal val noBranchWithSlashAction: AxonBranch by lazy {
+    internal val noBranchWithSlashAction: AxonBranch<T> by lazy {
         AxonBranch(EXPRESSION_NO_BRANCH_WITH_SLASH) {
             onProcessNoBranch(it)
         }
     }
-    internal val otherBranchAction: AxonBranch by lazy {
+    internal val otherBranchAction: AxonBranch<T> by lazy {
         AxonBranch(EXPRESSION_OTHER_BRANCH) {
             onProcessOtherBranch(it)
         }
@@ -150,10 +150,10 @@ abstract class Soma(id: String) : Nucleus(id) {
     open fun onSomaProcess(signal: Signal): Boolean = false
 
     // onSomaProcess must return false to be processed here
-    abstract fun onProcessNoBranch(signal: Signal):Result
+    abstract fun onProcessNoBranch(signal: Signal):Response<T>
 
     // onSomaProcess must return false to be processed here
-    abstract fun onProcessOtherBranch(signal: Signal):Result
+    abstract fun onProcessOtherBranch(signal: Signal):Response<T>
 
     companion object {
         const val EXPRESSION_NO_BRANCH = ""
@@ -162,12 +162,12 @@ abstract class Soma(id: String) : Nucleus(id) {
     }
 }
 
-abstract class SomaOnly(id: String) : Nucleus(id) {
+abstract class SomaOnly<T>(id: String) : Nucleus<T>(id) {
 
     abstract fun onSomaProcess(signal: Signal)
 }
 
-abstract class SomaFallback : SomaOnly(ID) {
+abstract class SomaFallback<T> : SomaOnly<T>(ID) {
 
     final override val schemes = super.schemes
     final override val hosts = super.hosts

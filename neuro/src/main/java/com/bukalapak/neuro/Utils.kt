@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentSkipListSet
 typealias SignalAction<T> = (Signal) -> Response<T>
 typealias AxonPreprocessor<T> = (AxonProcessor<T>, SignalAction<T>, Signal) -> Response<T>
 typealias AxonProcessor<T> = (SignalAction<T>, Signal) -> Response<T>
-typealias RouteDecision = Triple<Nucleus.Chosen, AxonBranch?, Uri>
-typealias AxonTerminal = ConcurrentSkipListMap<Int, ConcurrentSkipListSet<AxonBranch>>
+typealias RouteDecision<T> = Triple<Nucleus.Chosen<T>, AxonBranch<T>?, Uri>
+typealias AxonTerminal<T> = ConcurrentSkipListMap<Int, ConcurrentSkipListSet<AxonBranch<T>>>
 
 private const val COMMON_PATTERN = """[^/]+"""
 

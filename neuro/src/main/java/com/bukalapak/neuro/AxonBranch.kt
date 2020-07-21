@@ -1,9 +1,9 @@
 package com.bukalapak.neuro
 
-class AxonBranch(
+class AxonBranch<T>(
     val expression: String,
-    val action: SignalAction
-) : Comparable<AxonBranch> {
+    val action: SignalAction<T>
+) : Comparable<AxonBranch<T>> {
 
     private val comparedPattern: String by lazy {
 
@@ -30,7 +30,7 @@ class AxonBranch(
      * #1 length
      * #2 alphabetical
      */
-    override fun compareTo(other: AxonBranch): Int {
+    override fun compareTo(other: AxonBranch<T>): Int {
         val pattern1 = comparedPattern
         val pattern2 = other.comparedPattern
 
