@@ -22,7 +22,11 @@ class MainActivity : AppCompatActivity() {
         registerRoute()
 
         btnProceed.setOnClickListener {
-            router.proceed(etUrl.text.toString(), this)
+            val response = router.proceed(etUrl.text.toString(), this)
+
+            if (response.success){
+                toast(this, response.body)
+            }
         }
     }
 
@@ -39,21 +43,18 @@ class MainActivity : AppCompatActivity() {
 
         // https://www.mywebsite.com/login
         router.addPath("/login") {
-            toast(it.context, "Login")
             return@addPath Response.success("Login")
         }
 
         // https://www.mywebsite.com/messages/1234
         router.addPath("/messages/<message_id>") {
             val messageId = it.variables.optString("message_id")
-            toast(it.context, "Message with $messageId")
             return@addPath Response.success("Message with $messageId")
         }
 
         // https://www.mywebsite.com/promo?source=banner
         router.addPath("/promo") {
             val source = it.queries.optString("source")
-            toast(it.context, "Promo with $source")
             return@addPath Response.success("Promo with $source")
         }
     }

@@ -12,7 +12,7 @@ import java.util.regex.Pattern
 
 class Neuro<T> {
 
-    internal val neurons = ConcurrentSkipListMap<Nucleus, AxonTerminal<T>>()
+    internal val neurons = ConcurrentSkipListMap<Nucleus<T>, AxonTerminal<T>>()
     var preprocessor: AxonPreprocessor<T>? = null
     var logger: Logger? = Logger.DEFAULT
 
@@ -75,7 +75,7 @@ class Neuro<T> {
         connect(soma, listOf(branch))
     }
 
-    fun connect(soma: SomaOnly) {
+    fun connect(soma: SomaOnly<T>) {
         // only dummy, because ConcurrentSkipListMap can't accept null value
         val dummy = AxonTerminal<T>()
         neurons[soma] = dummy
@@ -135,7 +135,7 @@ class Neuro<T> {
                     return Response.error("transportDone equals false")
                 }
             }
-            is SomaOnly -> {
+            is SomaOnly<*> -> {
                 nucleus.onSomaProcess(signal)
             }
         }
@@ -149,13 +149,11 @@ class Neuro<T> {
             _action.invoke(_signal)
         }
 
-        val t = usedAxonPreprocessor.invoke(
+        return usedAxonPreprocessor.invoke(
             usedAxonProcessor,
             branch.action,
             signal
         )
-        Log.e("sdsd","asdffffffffffffffffffffffffffffffffffffffffffff")
-        return t
     }
 
     fun findRoute(url: String): RouteDecision<T>? {
@@ -180,7 +178,7 @@ class Neuro<T> {
         // find matched branch
         val branch: AxonBranch<T>? = when (nucleus) {
             is SomaOnly -> null
-            is Soma<*> -> {
+            is Soma<T> -> {
                 val pathCount = uri.path?.let {
                     it.split('/').size - 1
                 }
@@ -233,7 +231,7 @@ class Neuro<T> {
     private fun String.adaptWithLiteral() = """\E$this\Q"""
 
     private fun extractSignal(
-        chosenNucleus: Nucleus.Chosen,
+        chosenNucleus: Nucleus.Chosen<T>,
         context: Context?,
         branch: AxonBranch<T>?,
         uri: Uri,
