@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bukalapak.neuro.SimpleNeuro
+import com.bukalapak.result.GoodResult
+import com.bukalapak.result.SpecialResult
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -29,18 +31,21 @@ class MainActivity : AppCompatActivity() {
         // https://www.mywebsite.com/login
         router.addPath("/login") {
             toast(it.context, "Login")
+            return@addPath SpecialResult()
         }
 
         // https://www.mywebsite.com/messages/1234
         router.addPath("/messages/<message_id>") {
             val messageId = it.variables.optString("message_id")
             toast(it.context, "Message with $messageId")
+            return@addPath GoodResult()
         }
 
         // https://www.mywebsite.com/promo?source=banner
         router.addPath("/promo") {
             val source = it.queries.optString("source")
             toast(it.context, "Promo with $source")
+            return@addPath GoodResult()
         }
     }
 

@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import com.bukalapak.result.ErrorResult
+import com.bukalapak.result.Result
 import java.util.Locale
 import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.ConcurrentSkipListSet
@@ -87,8 +89,8 @@ class Neuro {
         context: Context? = null,
         axonProcessor: AxonProcessor? = null,
         args: Bundle = Bundle()
-    ) {
-        proceedInternal(url, decision, context, axonProcessor, args)
+    ): Result {
+        return proceedInternal(url, decision, context, axonProcessor, args)
     }
 
     @JvmOverloads
@@ -97,8 +99,8 @@ class Neuro {
         context: Context? = null,
         axonProcessor: AxonProcessor? = null,
         args: Bundle = Bundle()
-    ) {
-        proceedInternal(url, findRoute(url), context, axonProcessor, args)
+    ): Result {
+        return proceedInternal(url, findRoute(url), context, axonProcessor, args)
     }
 
     private fun proceedInternal(
@@ -107,12 +109,12 @@ class Neuro {
         context: Context? = null,
         axonProcessor: AxonProcessor? = null,
         args: Bundle = Bundle()
-    ) {
+    ): Result {
         logger?.onRoutingUrl(url)
 
         if (decision == null) {
             logger?.onUrlHasNoResult(url)
-            return
+            return ErrorResult()
         } else {
             logger?.onUrlHasResult(url, decision.first.nucleus, decision.second)
         }
@@ -122,7 +124,7 @@ class Neuro {
         val branch = decision.second
         val uri = decision.third
 
-        val signal = extractSignal(chosenNucleus, context, branch, uri, args) ?: return
+        val signal = extractSignal(chosenNucleus, context, branch, uri, args) ?: return ErrorResult()
 
         when (nucleus) {
             is Soma -> {
@@ -131,7 +133,7 @@ class Neuro {
                 // check whether Soma need to forward to AxonBranch or not
                 if (transportDone) {
                     logger?.onNucleusReturnedFalse(url)
-                    return
+                    return ErrorResult()
                 }
             }
             is SomaOnly -> {
@@ -139,7 +141,7 @@ class Neuro {
             }
         }
 
-        if (branch == null) return
+        if (branch == null) return ErrorResult()
 
         val usedAxonPreprocessor = this.preprocessor ?: { _axonProcessor, _action, _signal ->
             _axonProcessor.invoke(_action, _signal)
@@ -148,11 +150,13 @@ class Neuro {
             _action.invoke(_signal)
         }
 
-        usedAxonPreprocessor.invoke(
+        val t:Result = usedAxonPreprocessor.invoke(
             usedAxonProcessor,
             branch.action,
             signal
         )
+        Log.e("sdsd","asdffffffffffffffffffffffffffffffffffffffffffff")
+        return t as Result
     }
 
     fun findRoute(url: String): RouteDecision? {

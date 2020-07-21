@@ -1,5 +1,6 @@
 package com.bukalapak.neuro
 
+import com.bukalapak.result.Result
 import java.util.Locale
 
 sealed class Nucleus(val id: String) : Comparable<Nucleus> {
@@ -149,10 +150,10 @@ abstract class Soma(id: String) : Nucleus(id) {
     open fun onSomaProcess(signal: Signal): Boolean = false
 
     // onSomaProcess must return false to be processed here
-    open fun onProcessNoBranch(signal: Signal) = Unit
+    abstract fun onProcessNoBranch(signal: Signal):Result
 
     // onSomaProcess must return false to be processed here
-    open fun onProcessOtherBranch(signal: Signal) = Unit
+    abstract fun onProcessOtherBranch(signal: Signal):Result
 
     companion object {
         const val EXPRESSION_NO_BRANCH = ""

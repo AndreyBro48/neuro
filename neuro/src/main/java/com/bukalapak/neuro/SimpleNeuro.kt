@@ -2,6 +2,8 @@ package com.bukalapak.neuro
 
 import android.content.Context
 import android.net.Uri
+import com.bukalapak.result.ErrorResult
+import com.bukalapak.result.Result
 
 class SimpleNeuro {
 
@@ -10,9 +12,12 @@ class SimpleNeuro {
 
     fun setBase(uri: Uri) {
         soma = object : Soma(ID) {
+            override fun onProcessNoBranch(signal: Signal): Result = ErrorResult()
+            override fun onProcessOtherBranch(signal: Signal): Result = ErrorResult()
             override val schemes = uri.scheme?.let { listOf(it) } ?: emptyList()
             override val hosts = uri.host?.let { listOf(it) } ?: emptyList()
             override val ports = if (uri.port == -1) emptyList() else listOf(uri.port)
+
         }
     }
 
