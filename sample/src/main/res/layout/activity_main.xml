@@ -12,7 +12,8 @@
         android:id="@+id/etUrl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/enter_url_here" />
+        android:hint="@string/enter_url_here"
+        android:text="@string/test_url_login"/>
 
     <Button
         android:id="@+id/btnProceed"

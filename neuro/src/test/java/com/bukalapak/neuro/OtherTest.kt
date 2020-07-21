@@ -2,6 +2,7 @@ package com.bukalapak.neuro
 
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.bukalapak.result.GoodResult
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import org.junit.Test
@@ -16,6 +17,7 @@ class OtherTest {
         router.setBase(Uri.parse("https://domain.com"))
         router.addPath("/faq") {
             assertThat(it.queries.getString("key"), equalTo("value"))
+            return@addPath GoodResult()
         }
         router.proceed("https://domain.com/faq?key=value")
     }
