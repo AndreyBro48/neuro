@@ -1,25 +1,25 @@
 package com.bukalapak.result
 
 class Response<T> private constructor(
-        body: T? = null,
+        _body: T? = null,
         val success: Boolean,
-        error: String? = null
+        _error: String? = null
 ){
-    private val mBody:T? = body
+    private val mBody:T? = _body
     val body: T
     get() = if (success) mBody!! else throw IllegalArgumentException("unsuccessful response have not body")
-    private val mError:String? = error
+    private val mError:String? = _error
     val error: String
         get() = if (!success) mError!! else throw IllegalArgumentException("unsuccessful response have not body")
 
 
     companion object {
         fun <T> success(body:T):Response<T>{
-            return Response(body = body, success = true)
+            return Response(_body = body, success = true)
         }
 
         fun <T> error(error: String):Response<T>{
-            return Response(error = error, success = false)
+            return Response(_error = error, success = false)
         }
     }
 }

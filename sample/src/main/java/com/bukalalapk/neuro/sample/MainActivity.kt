@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
             return@addPath Response.success("{id:2, name:\"Яблоки\"}")
         }
         val response:Response<String> = myRouter.proceed("scales://products")
-        Log.e("TAG", response.body)
+        //Log.e("TAG", response.body)
 
         router.setBase(Uri.parse("https://www.mywebsite.com"))
 
@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         router.addPath("/promo") {
             val source = it.queries.optString("source")
             toast(it.context, "Promo with $source")
-            return@addPath GoodResult()
+            return@addPath Response.success("Promo with $source")
         }
     }
 

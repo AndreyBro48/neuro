@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import com.bukalapak.result.ErrorResult
 import com.bukalapak.result.Response
 import java.util.Locale
 import java.util.concurrent.ConcurrentSkipListMap
@@ -13,7 +12,7 @@ import java.util.regex.Pattern
 
 class Neuro<T> {
 
-    internal val neurons = ConcurrentSkipListMap<Nucleus, AxonTerminal>()
+    internal val neurons = ConcurrentSkipListMap<Nucleus, AxonTerminal<T>>()
     var preprocessor: AxonPreprocessor<T>? = null
     var logger: Logger? = Logger.DEFAULT
 
@@ -28,7 +27,7 @@ class Neuro<T> {
     }
 
     @Synchronized
-    fun connect(soma: Soma, branches: List<AxonBranch>) {
+    fun connect(soma: Soma<T>, branches: List<AxonBranch<T>>) {
         val expression = branches.map { it.expression }
         val blacklistedExpression = listOf(
             Soma.EXPRESSION_NO_BRANCH,
@@ -46,7 +45,7 @@ class Neuro<T> {
         }
 
         val terminal = neurons[soma] ?: let {
-            val newTerminal = AxonTerminal(terminalComparator)
+            val newTerminal = AxonTerminal<T>(terminalComparator)
             neurons[soma] = newTerminal
             newTerminal
         }
@@ -64,7 +63,7 @@ class Neuro<T> {
             val usedIndex = if (hasPatternedRegex) -literalPathCount else literalPathCount
 
             val usedBranches = terminal[usedIndex] ?: let {
-                val newBranches = ConcurrentSkipListSet<AxonBranch>()
+                val newBranches = ConcurrentSkipListSet<AxonBranch<T>>()
                 terminal[usedIndex] = newBranches
                 newBranches
             }
@@ -72,20 +71,20 @@ class Neuro<T> {
         }
     }
 
-    fun connect(soma: Soma, branch: AxonBranch) {
+    fun connect(soma: Soma<T>, branch: AxonBranch<T>) {
         connect(soma, listOf(branch))
     }
 
     fun connect(soma: SomaOnly) {
         // only dummy, because ConcurrentSkipListMap can't accept null value
-        val dummy = AxonTerminal()
+        val dummy = AxonTerminal<T>()
         neurons[soma] = dummy
     }
 
     @JvmOverloads
     fun proceed(
         url: String,
-        decision: RouteDecision?,
+        decision: RouteDecision<T>?,
         context: Context? = null,
         axonProcessor: AxonProcessor<T>? = null,
         args: Bundle = Bundle()
@@ -105,7 +104,7 @@ class Neuro<T> {
 
     private fun proceedInternal(
         url: String,
-        decision: RouteDecision?,
+        decision: RouteDecision<T>?,
         context: Context? = null,
         axonProcessor: AxonProcessor<T>? = null,
         args: Bundle = Bundle()
@@ -127,7 +126,7 @@ class Neuro<T> {
         val signal = extractSignal(chosenNucleus, context, branch, uri, args) ?: return Response.error("")
 
         when (nucleus) {
-            is Soma -> {
+            is Soma<*> -> {
                 val transportDone = nucleus.onSomaProcess(signal)
 
                 // check whether Soma need to forward to AxonBranch or not
@@ -159,7 +158,7 @@ class Neuro<T> {
         return t
     }
 
-    fun findRoute(url: String): RouteDecision? {
+    fun findRoute(url: String): RouteDecision<T>? {
         val uri = url.toOptimizedUri() ?: throw IllegalArgumentException("Url is not valid")
 
         logger?.onFindRouteStarted(url)
@@ -179,9 +178,9 @@ class Neuro<T> {
         val chosenTerminal = neurons[nucleus] ?: return null
 
         // find matched branch
-        val branch = when (nucleus) {
+        val branch: AxonBranch<T>? = when (nucleus) {
             is SomaOnly -> null
-            is Soma -> {
+            is Soma<*> -> {
                 val pathCount = uri.path?.let {
                     it.split('/').size - 1
                 }
@@ -214,7 +213,6 @@ class Neuro<T> {
         }
 
         logger?.onFindRouteFinished(url)
-
         return Triple(chosenNucleus, branch, uri)
     }
 
@@ -237,7 +235,7 @@ class Neuro<T> {
     private fun extractSignal(
         chosenNucleus: Nucleus.Chosen,
         context: Context?,
-        branch: AxonBranch?,
+        branch: AxonBranch<T>?,
         uri: Uri,
         args: Bundle
     ): Signal? {

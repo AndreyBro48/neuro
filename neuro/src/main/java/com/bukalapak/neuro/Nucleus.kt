@@ -1,6 +1,6 @@
 package com.bukalapak.neuro
 
-import com.bukalapak.result.Result
+import com.bukalapak.result.Response
 import java.util.Locale
 
 sealed class Nucleus(val id: String) : Comparable<Nucleus> {
@@ -128,19 +128,19 @@ sealed class Nucleus(val id: String) : Comparable<Nucleus> {
     final override fun hashCode(): Int = 31 * id.hashCode()
 }
 
-abstract class Soma(id: String) : Nucleus(id) {
+abstract class Soma<T>(id: String) : Nucleus(id) {
 
-    internal val noBranchAction: AxonBranch by lazy {
+    internal val noBranchAction: AxonBranch<T> by lazy {
         AxonBranch(EXPRESSION_NO_BRANCH) {
             onProcessNoBranch(it)
         }
     }
-    internal val noBranchWithSlashAction: AxonBranch by lazy {
+    internal val noBranchWithSlashAction: AxonBranch<T> by lazy {
         AxonBranch(EXPRESSION_NO_BRANCH_WITH_SLASH) {
             onProcessNoBranch(it)
         }
     }
-    internal val otherBranchAction: AxonBranch by lazy {
+    internal val otherBranchAction: AxonBranch<T> by lazy {
         AxonBranch(EXPRESSION_OTHER_BRANCH) {
             onProcessOtherBranch(it)
         }
@@ -150,10 +150,10 @@ abstract class Soma(id: String) : Nucleus(id) {
     open fun onSomaProcess(signal: Signal): Boolean = false
 
     // onSomaProcess must return false to be processed here
-    abstract fun onProcessNoBranch(signal: Signal):Result
+    abstract fun onProcessNoBranch(signal: Signal):Response<T>
 
     // onSomaProcess must return false to be processed here
-    abstract fun onProcessOtherBranch(signal: Signal):Result
+    abstract fun onProcessOtherBranch(signal: Signal):Response<T>
 
     companion object {
         const val EXPRESSION_NO_BRANCH = ""

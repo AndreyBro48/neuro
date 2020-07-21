@@ -8,7 +8,7 @@ interface Logger {
         Log.i(Neuro.TAG, "Routing url $url")
     }
 
-    fun onUrlHasResult(url: String, nucleus: Nucleus, branch: AxonBranch?) {
+    fun onUrlHasResult(url: String, nucleus: Nucleus, branch: AxonBranch<*>?) {
         Log.i(Neuro.TAG, "Routing via $nucleus and $branch")
     }
 
